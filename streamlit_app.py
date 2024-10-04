@@ -228,10 +228,13 @@ def main():
         results_df.sort_values(by='Total Return (%)', ascending=False, inplace=True)
 
         st.write("### Stock Ranking:")
+        st.write("*Current Price refers to the last closing price of training dataset.")
+        st.write("*Target Price refers to the mean analyst price target.")
         st.dataframe(results_df[['Rank', 'Ticker', 'Current Price ($)', 'Target Price ($)', 'Potential Upside (%)']])
 
         # Trade Bot Performance Section
         st.write("### Trade Bot Performance:")
+        st.write("*Trading performance based on 1 year of test data.")
         performance_df = results_df[['Ticker', 'Trades Closed', 'Average Return per Trade (%)', 'Total Return (%)', 'In Trade']].copy()
         performance_df.rename(columns={'In Trade': 'Status'}, inplace=True)
         performance_df['Status'] = performance_df['Status'].apply(lambda x: "In Trade" if x else "Closed")  # Set Status
