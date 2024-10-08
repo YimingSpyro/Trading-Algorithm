@@ -183,8 +183,8 @@ def analyze_stock(ticker):
         'Test Data': test_data
     }
 
-# Function to plot stock data and optionally save plots as images
-def plot_or_save_stock_data(ticker, test_data, action='plot'):
+# Function to plot stock data and save plots as images
+def plot_and_save_stock_data(ticker, test_data):
     # Prepare data for plotting
     upper_band = test_data['Upper_Band']
     lower_band = test_data['Lower_Band']
@@ -223,21 +223,17 @@ def plot_or_save_stock_data(ticker, test_data, action='plot'):
 
     plt.tight_layout()
 
-    # Action handling
-    if action == 'plot':
-        # Use Streamlit to display plots
-        st.pyplot(fig)
-    elif action == 'save':
-        # Save the plot as an image
-        image_path = f"{ticker}_stock_data.png"
-        plt.savefig(image_path)
-        plt.close()  # Close the figure to avoid display in Streamlit
-        return image_path
-    else:
-        raise ValueError("Invalid action. Use 'plot' or 'save'.")
+    # Use Streamlit to display plots
+    st.pyplot(fig)
+
+    # Save the plot as an image
+    image_path = f"{ticker}_stock_data.png"
+    plt.savefig(image_path)
+    plt.close()  # Close the figure to avoid display in Streamlit
+    return image_path
 
 # Function to download results as PDF
-def download_results_as_pdf(stock_ranking_df, performance_df, top_stock_images):
+def download_results_as_pdf(results_df, performance_df, top_stock_images):
     pdf = FPDF()
     pdf.set_auto_page_break(auto=True, margin=15)
     pdf.add_page()
@@ -251,24 +247,19 @@ def download_results_as_pdf(stock_ranking_df, performance_df, top_stock_images):
     pdf.cell(0, 10, 'Stock Ranking:', ln=True)
     pdf.set_font("Arial", '', 12)
 
-    # Calculate column widths for stock ranking table
-    total_width = pdf.w - 2 * pdf.l_margin  # Total width available for content
-    col_widths_ranking = [30, 50, 40, 40, 50]  # Widths for each column in stock ranking
-    col_widths_ranking = [total_width * (width / sum(col_widths_ranking)) for width in col_widths_ranking]
-
-    # Table header
-    headers = ['Rank', 'Ticker', 'Current Price ($)', 'Target Price ($)', 'Potential Upside (%)']
-    for i, header in enumerate(headers):
-        pdf.cell(col_widths_ranking[i], 10, header, 1)
+    pdf.cell(30, 10, 'Rank', 1)
+    pdf.cell(50, 10, 'Ticker', 1)
+    pdf.cell(40, 10, 'Current Price ($)', 1)
+    pdf.cell(40, 10, 'Target Price ($)', 1)
+    pdf.cell(50, 10, 'Potential Upside (%)', 1)
     pdf.ln()
 
-    # Table rows
-    for index, row in stock_ranking_df.iterrows():
-        pdf.cell(col_widths_ranking[0], 10, str(int(row['Rank'])), 1)
-        pdf.cell(col_widths_ranking[1], 10, row['Ticker'], 1)
-        pdf.cell(col_widths_ranking[2], 10, str(round(row['Current Price ($)'], 2)), 1)
-        pdf.cell(col_widths_ranking[3], 10, str(round(row['Target Price ($)'], 2)), 1)
-        pdf.cell(col_widths_ranking[4], 10, str(round(row['Potential Upside (%)'], 2)), 1)
+    for index, row in results_df.iterrows():
+        pdf.cell(30, 10, str(int(row['Rank'])), 1)
+        pdf.cell(50, 10, row['Ticker'], 1)
+        pdf.cell(40, 10, str(round(row['Current Price ($)'], 2)), 1)
+        pdf.cell(40, 10, str(round(row['Target Price ($)'], 2)), 1)
+        pdf.cell(50, 10, str(round(row['Potential Upside (%)'], 2)), 1)
         pdf.ln()
 
     pdf.ln(10)
@@ -278,23 +269,17 @@ def download_results_as_pdf(stock_ranking_df, performance_df, top_stock_images):
     pdf.cell(0, 10, 'Trade Bot Performance:', ln=True)
     pdf.set_font("Arial", '', 12)
 
-    # Calculate column widths for trade bot performance table
-    col_widths_performance = [30, 50, 50, 60, 50]  # Widths for each column in performance table
-    col_widths_performance = [total_width * (width / sum(col_widths_performance)) for width in col_widths_performance]
-
-    # Table header
-    headers_performance = ['Rank', 'Ticker', 'Trades Closed', 'Total Return (%)', 'Status']
-    for i, header in enumerate(headers_performance):
-        pdf.cell(col_widths_performance[i], 10, header, 1)
+    pdf.cell(50, 10, 'Ticker', 1)
+    pdf.cell(50, 10, 'Trades Closed', 1)
+    pdf.cell(60, 10, 'Avg Return per Trade (%)', 1)
+    pdf.cell(50, 10, 'Total Return (%)', 1)
     pdf.ln()
 
-    # Table rows
     for index, row in performance_df.iterrows():
-        pdf.cell(col_widths_performance[0], 10, str(int(row['Rank'])), 1)
-        pdf.cell(col_widths_performance[1], 10, row['Ticker'], 1)
-        pdf.cell(col_widths_performance[2], 10, str(row['Trades Closed']), 1)
-        pdf.cell(col_widths_performance[3], 10, str(round(row['Total Return (%)'], 2)), 1)
-        pdf.cell(col_widths_performance[4], 10, str(row['Status']), 1)
+        pdf.cell(50, 10, row['Ticker'], 1)
+        pdf.cell(50, 10, str(row['Trades Closed']), 1)
+        pdf.cell(60, 10, str(round(row['Average Return per Trade (%)'], 2)), 1)
+        pdf.cell(50, 10, str(round(row['Total Return (%)'], 2)), 1)
         pdf.ln()
 
     pdf.ln(10)
@@ -305,7 +290,7 @@ def download_results_as_pdf(stock_ranking_df, performance_df, top_stock_images):
     pdf.set_font("Arial", '', 12)
 
     for image_path in top_stock_images:
-        pdf.image(image_path, x=10, w=pdf.w - 20)  # Adjust width to fit the page width, leave margin
+        pdf.image(image_path, x=10, w=180)  # Adjust x, w as necessary
         pdf.ln(5)  # Add space between images
 
     pdf_file_path = "stock_analysis_results.pdf"
@@ -336,40 +321,37 @@ def main():
 
         # Stock Ranking Section
         results_df = pd.DataFrame(results)
-        stock_ranking_df = results_df.sort_values(by='Potential Upside (%)', ascending=False).copy()
-        stock_ranking_df['Rank'] = results_df['Potential Upside (%)'].rank(ascending=False) 
-        trade_bot_df = results_df.sort_values(by='Total Return (%)', ascending=False).copy()
-        trade_bot_df['Rank'] = results_df['Total Return (%)'].rank(ascending=False) 
-        
+        results_df['Rank'] = results_df['Total Return (%)'].rank(ascending=False)  # Adding rank
+        results_df.sort_values(by='Total Return (%)', ascending=False, inplace=True)
 
         st.write("### Stock Ranking:")
         st.write("*Current Price refers to the last closing price of training dataset.")
         st.write("*Target Price refers to the mean analyst price target.")
-        st.dataframe(stock_ranking_df[['Rank', 'Ticker', 'Current Price ($)', 'Target Price ($)', 'Potential Upside (%)']])
+        st.dataframe(results_df[['Rank', 'Ticker', 'Current Price ($)', 'Target Price ($)', 'Potential Upside (%)']])
 
         # Trade Bot Performance Section
         st.write("### Trade Bot Performance:")
         st.write("*Trading performance based on 1 year of test data.")
-        performance_df = trade_bot_df[['Rank','Ticker', 'Trades Closed', 'Average Return per Trade (%)', 'Total Return (%)', 'In Trade']].copy()
+        performance_df = results_df[['Ticker', 'Trades Closed', 'Average Return per Trade (%)', 'Total Return (%)', 'In Trade']].copy()
         performance_df.rename(columns={'In Trade': 'Status'}, inplace=True)
         performance_df['Status'] = performance_df['Status'].apply(lambda x: "In Trade" if x else "Closed")  # Set Status
         st.dataframe(performance_df)
 
         # Graph Section for Top 3 Stocks
         st.write("### Top 3 stocks:")
-        top_stocks = trade_bot_df.head(3)
+        top_stocks = results_df.head(3)
         for index, row in top_stocks.iterrows():
             st.write(f"{row['Ticker']} Stock Data")
-            plot_or_save_stock_data(row['Ticker'], row['Test Data'], action='plot')
+            plot_and_save_stock_data(row['Ticker'], row['Test Data'])
 
         # Generate images for top 3 stocks
-        top_stocks = trade_bot_df.head(3)
+        top_stocks = results_df.head(3)
         for index, row in top_stocks.iterrows():
-            image_path = plot_or_save_stock_data(row['Ticker'], row['Test Data'], action='save')
+            image_path = plot_and_save_stock_data(row['Ticker'], row['Test Data'])
             top_stock_images.append(image_path)
 
         # Download PDF button
-        pdf_file_path = download_results_as_pdf(stock_ranking_df, performance_df, top_stock_images)
+        pdf_file_path = download_results_as_pdf(results_df, performance_df, top_stock_images)
         with open(pdf_file_path, "rb") as f:
             st.download_button("Download Results as PDF", f, file_name=pdf_file_path, mime='application/pdf')
 
