@@ -8,7 +8,7 @@ import os
 # List of stocks to analyze
 tickers = [
     # Technology
-    'AAPL', 'META', 'AMZN', 'NVDA', 'MSFT',
+    'AAPL', 'META', 'AMZN', 'NVDA', 'MSFT', 'TSLA', 'GOOG', 'GOOGL',
     
     # FinTech
     'PYPL', 'AXP', 'MA', 'GPN', 'V',
