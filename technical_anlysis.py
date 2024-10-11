@@ -1,53 +1,23 @@
+"""
+technical_analysis.py
+
+This module provides functions for trading strategy implementation and stock analysis. It includes 
+functions for calculating average sell signals, executing trading algorithms, evaluating trading 
+performance, and analyzing stock data based on technical indicators and analyst ratings.
+
+Functions:
+    - average_sell_signals: Calculates the average number of sell signals occurring between consecutive buy signals.
+    - trading_strategy: Simulates a trading strategy using buy and sell signals, calculates profits, and tracks balance.
+    - calculate_performance: Evaluates the trading performance, including total return, average return per trade, 
+      and annualized return.
+    - calculate_upside: Calculates the potential upside based on the current price and analyst target price.
+    - analyze_stock: Analyzes a stock's historical data using technical indicators, defines trading signals, 
+      and evaluates trading strategy performance.
+"""
+
 import yfinance as yf
-import pandas as pd
-import matplotlib.pyplot as plt
-import streamlit as st
-from reportlab.lib.pagesizes import letter
-from reportlab.pdfgen import canvas
-from io import BytesIO
-
-# List of stocks to analyze
-tickers = [
-    # Technology
-    'AAPL', 'META', 'AMZN', 'NVDA', 'MSFT',
-    
-    # FinTech
-    'PYPL', 'AXP', 'MA', 'GPN', 'V',
-    
-    # Finance
-    'GS', 'JPM', 'BLK', 'C', 'BX',
-    
-    # Consumer
-    'KO', 'WMT', 'MCD', 'NKE', 'SBUX'
-]
-
-# Function to calculate technical indicators
-def calculate_indicators(data):
-    short_ema = data['Close'].ewm(span=12, adjust=False).mean()
-    long_ma = data['Close'].ewm(span=26, adjust=False).mean()
-    macd = short_ema - long_ma
-    signal = macd.ewm(span=9, adjust=False).mean()
-
-    delta = data['Close'].diff(1)
-    gain = delta.where(delta > 0, 0)
-    loss = -delta.where(delta < 0, 0)
-    avg_gain = gain.rolling(window=14).mean()
-    avg_loss = loss.rolling(window=14).mean()
-    rs = avg_gain / avg_loss
-    rsi = 100 - (100 / (1 + rs))
-
-    sma = data['Close'].rolling(window=20).mean()
-    std_dev = data['Close'].rolling(window=20).std()
-    upper_band = sma + (std_dev * 2)
-    lower_band = sma - (std_dev * 2)
-
-    return macd, signal, rsi, upper_band, lower_band
-
-# Function to identify Buy and Sell Signals
-def define_signals(data):
-    data.loc[:, 'Buy_Signal'] = ((data['MACD'] < data['Signal']) & (data['MACD'] < 0) & (data['RSI'] < 30) & (data['Close'] <= data['Lower_Band'])).rolling(window=5).sum() >= 1
-    data.loc[:, 'Sell_Signal'] = ((data['MACD'] > data['Signal']) & (data['MACD'] > 0) & (data['RSI'] > 70) & (data['Close'] >= data['Upper_Band'])).rolling(window=5).sum() >= 1
-    return data
+from technical_indicators import calculate_indicators, define_signals
+from data_preprocessing import clean, get_analyst_ratings
 
 # Function to calculate average sell signals
 def average_sell_signals(data):
@@ -117,13 +87,6 @@ def calculate_performance(profits, initial_amount, final_amount, period_years):
     avg_annual_return = ((final_amount / initial_amount) ** (1 / period_years) - 1) * 100 if period_years > 0 else 0
     return total_trades, avg_return_per_trade, total_return, avg_annual_return
 
-# Function to get mean Analyst Ratings
-def get_analyst_ratings(ticker):
-    info = yf.Ticker(ticker).info
-    return {
-        'targetMeanPrice': info.get('targetMeanPrice')
-    }
-
 # Function to calculate potential upside based on analyst target price/current price
 def calculate_upside(current_price, target_price):
     if target_price <= 0:
@@ -132,7 +95,7 @@ def calculate_upside(current_price, target_price):
 
 # Display trading algorithm performance
 def analyze_stock(ticker):
-    data = yf.download(ticker, period='10y')
+    data = clean(yf.download(ticker, period='10y'))
 
     train_data = data[:-252]
     test_data = data[-252:]
@@ -176,57 +139,3 @@ def analyze_stock(ticker):
         'Train Data': train_data,
         'Test Data': test_data
     }
-
-# Function to save results to a PDF
-def save_to_pdf(results):
-    buffer = BytesIO()
-    c = canvas.Canvas(buffer, pagesize=letter)
-    width, height = letter
-    c.setFont("Helvetica", 12)
-
-    # Create PDF content
-    text = c.beginText(30, height - 40)
-    text.setFont("Helvetica", 12)
-    text.setLeading(15)  # Set line spacing
-
-    # Add each stock's analysis results to the PDF
-    for result in results:
-        text.textLine(f"Ticker: {result['Ticker']}")
-        text.textLine(f"Current Price: ${result['Current Price ($)']}")
-        text.textLine(f"Target Price: ${result['Target Price ($)']}")
-        text.textLine(f"Potential Upside: {result['Potential Upside (%)']}%")
-        text.textLine(f"Trades Closed: {result['Trades Closed']}")
-        text.textLine(f"Average Return per Trade: {result['Average Return per Trade (%)']}%")
-        text.textLine(f"Total Return: {result['Total Return (%)']}%")
-        text.textLine(f"In Trade: {'Yes' if result['In Trade'] else 'No'}")
-        text.textLine("")  # Add a blank line for spacing
-
-    c.drawText(text)
-    c.showPage()
-    c.save()
-
-    # Save the PDF
-    buffer.seek(0)
-    return buffer
-
-# Streamlit app
-st.title("Stock Trading Strategy Analyzer")
-st.write("Analyze stocks and visualize trading strategies.")
-
-selected_stocks = st.multiselect("Select stocks to analyze:", tickers)
-
-results = []
-if st.button("Analyze"):
-    for stock in selected_stocks:
-        result = analyze_stock(stock)
-        results.append(result)
-
-    if results:
-        st.write("Analysis Results:")
-        for result in results:
-            st.write(result)
-
-        # Create PDF button
-        if st.button("Save Results to PDF"):
-            pdf_buffer = save_to_pdf(results)
-            st.download_button("Download PDF", pdf_buffer, "stock_analysis_results.pdf", "application/pdf")

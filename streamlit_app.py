@@ -183,8 +183,22 @@ def analyze_stock(ticker):
         'Test Data': test_data
     }
 
-# Function to plot stock data and optionally save plots as images
-def plot_or_save_stock_data(ticker, test_data, action='plot'):
+def plot_or_save_stock_data(ticker, test_data, action='show'):
+    # Ensure the DataFrame is a copy to avoid view/copy issues
+    test_data = test_data.copy()
+
+    # Check if the necessary columns exist
+    required_columns = ['Date', 'Close', 'Upper_Band', 'Lower_Band', 'MACD', 'Signal', 'RSI', 'Buy_Signal', 'Sell_Signal']
+    for column in required_columns:
+        if column not in test_data.columns:
+            raise ValueError(f"The '{column}' column is missing from the test data.")
+
+    # Convert 'Date' to datetime if not already
+    test_data['Date'] = pd.to_datetime(test_data['Date'])
+    
+    # Set 'Date' as the index
+    test_data.set_index('Date', inplace=True)
+
     # Prepare data for plotting
     upper_band = test_data['Upper_Band']
     lower_band = test_data['Lower_Band']
@@ -202,39 +216,43 @@ def plot_or_save_stock_data(ticker, test_data, action='plot'):
     ax1.plot(lower_band, label='Lower Bollinger Band', color='blue')
     ax1.plot(sma_20, label='20-day SMA', color='orange')
     ax1.fill_between(test_data.index, lower_band, upper_band, color='gray', alpha=0.3)
-    ax1.scatter(test_data.index[test_data['Buy_Signal']], test_data['Close'][test_data['Buy_Signal']], label='Buy Signal', marker='^', color='green', alpha=1)
-    ax1.scatter(test_data.index[test_data['Sell_Signal']], test_data['Close'][test_data['Sell_Signal']], label='Sell Signal', marker='v', color='red', alpha=1)
+    ax1.scatter(test_data.index[test_data['Buy_Signal']], 
+                test_data['Close'][test_data['Buy_Signal']], 
+                label='Buy Signal', marker='^', color='green', alpha=1)
+    ax1.scatter(test_data.index[test_data['Sell_Signal']], 
+                test_data['Close'][test_data['Sell_Signal']], 
+                label='Sell Signal', marker='v', color='red', alpha=1)
     ax1.set_title(f'{ticker} Stock Price, Bollinger Bands, Moving Averages, Buy & Sell Signals')
-    ax1.legend()
+    ax1.legend(loc='upper left')  # Move legend to the top left
 
     # Plot MACD and Signal Line
     ax2.plot(macd, label='MACD', color='green')
     ax2.plot(signal, label='Signal Line', color='red')
     ax2.axhline(0, color='black', linestyle='--', linewidth=1)
     ax2.set_title('MACD and Signal Line')
-    ax2.legend()
+    ax2.legend(loc='upper left')  # Move legend to the top left
 
     # Plot RSI
     ax3.plot(rsi, label='RSI', color='purple')
     ax3.axhline(30, linestyle='--', alpha=0.5, color='red')
     ax3.axhline(70, linestyle='--', alpha=0.5, color='red')
     ax3.set_title('RSI')
-    ax3.legend()
+    ax3.legend(loc='upper left')  # Move legend to the top left
 
-    plt.tight_layout()
-
-    # Action handling
-    if action == 'plot':
-        # Use Streamlit to display plots
-        st.pyplot(fig)
-    elif action == 'save':
-        # Save the plot as an image
-        image_path = f"{ticker}_stock_data.png"
+    # Use Streamlit to display plots
+    if action == 'save':
+        # Ensure the output directory exists
+        output_dir = 'saved_plots'
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
+        image_path = os.path.join(output_dir, f'{ticker}_signals.png')
         plt.savefig(image_path)
-        plt.close()  # Close the figure to avoid display in Streamlit
+        plt.close()
         return image_path
     else:
-        raise ValueError("Invalid action. Use 'plot' or 'save'.")
+        # Display the plot in Streamlit
+        st.pyplot(fig)
+        plt.close()  # Close the figure after displaying to avoid overlapping plots
 
 # Function to download results as PDF
 def download_results_as_pdf(stock_ranking_df, performance_df, top_stock_images):
@@ -357,7 +375,7 @@ def main():
 
         # Graph Section for Top 3 Stocks
         st.write("### Top 3 stocks:")
-        top_stocks = trade_bot_df.head(3)
+        top_stocks = trade_bot_df.head()
         for index, row in top_stocks.iterrows():
             st.write(f"{row['Ticker']} Stock Data")
             plot_or_save_stock_data(row['Ticker'], row['Test Data'], action='plot')
