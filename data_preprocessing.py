@@ -2,19 +2,18 @@
 data_preprocessing.py
 
 This module provides functions for data preprocessing and fetching analyst ratings for stocks.
-It includes functions to clean historical stock data by filling missing values, removing any rows with missing values, standardising date format and to retrieve 
+It includes functions to clean historical stock data by filling missing values and to retrieve 
 mean analyst ratings for a specified stock ticker.
 
 Functions:
-    - clean(): First we start by inspecting the first few rows of the data to identify missing values, duplicates, or unnecessary columns. Then we proceed to extract the 'Close' column from the data  and fills any missing 
-      'Close' values with the previous day's value. Furthermore, for the 'Date' column, we reset the index to inlcude 'Date' as a column. Furthermore, we standadise the 'Date' column's format.
-
-    - get_analyst_ratings(): Retrieves the mean target price from analyst ratings for a given stock ticker.
+    - clean: Extracts the 'Close' column from the data, resets the index, and fills any missing 
+      'Close' values with the previous day's value.
+    - get_analyst_ratings: Retrieves the mean target price from analyst ratings for a given stock ticker.
 """
 
 import yfinance as yf
 import pandas as pd
-
+# Function to extract 'Date' and 'Close' columns, and fill missing 'Close' values with the previous day's value
 def clean(data):
 
     # Provides overview of columns, data types, and nulls

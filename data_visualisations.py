@@ -152,17 +152,20 @@ def download_results_as_pdf(stock_ranking_df, performance_df, top_stock_images):
 
     pdf.ln(10)
 
-    # Top 3 Stocks Section
+    # Visualisation analysis of Stocks Section
     pdf.add_page()
     pdf.set_font("Arial", 'B', 14)
-    pdf.cell(0, 10, 'Top 3 Stocks:', ln=True)
+    pdf.cell(0, 10, 'Stock Analysis: Ranked by highest returns', ln=True)
     pdf.set_font("Arial", '', 12)
 
     for image_path in top_stock_images:
         pdf.image(image_path, x=10, w=pdf.w - 20)  # Adjust width to fit the page width, leave margin
         pdf.ln(5)  # Add space between images
 
-    pdf_file_path = "stock_analysis_results.pdf"
+    returns_list = stock_ranking_df['Ticker'].tolist()
+    stock_name = "_".join(returns_list)
+    pdf_file_path = f"{stock_name}_stock_analysis_results.pdf"
+
     pdf.output(pdf_file_path)
 
     # Remove saved stock data images
