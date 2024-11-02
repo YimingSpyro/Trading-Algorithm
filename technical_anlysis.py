@@ -95,7 +95,7 @@ def calculate_upside(current_price, target_price):
 
 # Display trading algorithm performance
 def analyze_stock(ticker):
-    data = clean(yf.download(ticker, start = "2014-10-15" , end = "2024-10-15"))
+    data = clean(yf.download(ticker, period='10y'))
 
     train_data = data[:-252]
     test_data = data[-252:]
