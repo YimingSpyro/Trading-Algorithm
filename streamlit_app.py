@@ -44,10 +44,20 @@ def calculate_indicators(data):
 
 # Function to identify Buy and Sell Signals
 def define_signals(data):
-     # Ensure that data is a DataFrame and has the necessary columns
-    if 'MACD' in data.columns and 'Signal' in data.columns:
-        data.loc[:, 'Buy_Signal'] = ((data['MACD'] < data['Signal']) & (data['MACD'] < 0) & (data['RSI'] < 30) & (data['Close'] <= data['Lower_Band'])).rolling(window=5).sum() >= 1
-        data.loc[:, 'Sell_Signal'] = ((data['MACD'] > data['Signal']) & (data['MACD'] > 0) & (data['RSI'] > 70) & (data['Close'] >= data['Upper_Band'])).rolling(window=5).sum() >= 1
+    
+    # Fill NaNs if necessary
+    data = data.fillna(method='ffill')
+
+    # Ensure correct data types
+    for col in ['MACD', 'Signal', 'RSI', 'Close', 'Lower_Band']:
+        data[col] = pd.to_numeric(data[col], errors='coerce')
+
+    # Check for enough data
+    if len(data) < 5:
+        raise ValueError("Not enough data points for rolling operation")
+
+    data.loc[:, 'Buy_Signal'] = ((data['MACD'] < data['Signal']) & (data['MACD'] < 0) & (data['RSI'] < 30) & (data['Close'] <= data['Lower_Band'])).rolling(window=5).sum() >= 1
+    data.loc[:, 'Sell_Signal'] = ((data['MACD'] > data['Signal']) & (data['MACD'] > 0) & (data['RSI'] > 70) & (data['Close'] >= data['Upper_Band'])).rolling(window=5).sum() >= 1
     return data
     
 
