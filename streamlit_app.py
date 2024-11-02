@@ -36,7 +36,7 @@ from data_visualisations import plot_or_save_stock_data, download_results_as_pdf
 # List of stocks to analyze
 tickers = [
     # Technology
-    'AAPL', 'META', 'AMZN', 'NVDA', 'MSFT','TSLA',
+    'AAPL', 'META', 'AMZN', 'NVDA', 'MSFT',
     
     # FinTech
     'PYPL', 'AXP', 'MA', 'GPN', 'V',
