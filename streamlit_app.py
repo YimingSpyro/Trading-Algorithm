@@ -44,9 +44,13 @@ def calculate_indicators(data):
 
 # Function to identify Buy and Sell Signals
 def define_signals(data):
-    data.loc[:, 'Buy_Signal'] = ((data['MACD'] < data['Signal']) & (data['MACD'] < 0) & (data['RSI'] < 30) & (data['Close'] <= data['Lower_Band'])).rolling(window=5).sum() >= 1
-    data.loc[:, 'Sell_Signal'] = ((data['MACD'] > data['Signal']) & (data['MACD'] > 0) & (data['RSI'] > 70) & (data['Close'] >= data['Upper_Band'])).rolling(window=5).sum() >= 1
+     # Ensure that data is a DataFrame and has the necessary columns
+    if 'MACD' in data.columns and 'Signal' in data.columns:
+        data.loc[:, 'Buy_Signal'] = ((data['MACD'] < data['Signal']) & (data['MACD'] < 0) & (data['RSI'] < 30) & (data['Close'] <= data['Lower_Band'])).rolling(window=5).sum() >= 1
+        data.loc[:, 'Sell_Signal'] = ((data['MACD'] > data['Signal']) & (data['MACD'] > 0) & (data['RSI'] > 70) & (data['Close'] >= data['Upper_Band'])).rolling(window=5).sum() >= 1
     return data
+    
+
 
 # Function to calculate average sell signals
 def average_sell_signals(data):
@@ -133,7 +137,8 @@ def calculate_upside(current_price, target_price):
 def clean(data):
     data = data[['Close']]
     data.reset_index(inplace=True)  # Reset index to have 'Date' as a column
-    data['Close'].fillna(method='ffill', inplace=True)
+    data.loc[:, 'Close'] = data['Close'].fillna(method='ffill')
+
     return data
 
 # Display trading algorithm performance
