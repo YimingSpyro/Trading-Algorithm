@@ -15,7 +15,6 @@ import yfinance as yf
 import pandas as pd
 # Function to extract 'Date' and 'Close' columns, and fill missing 'Close' values with the previous day's value
 def clean(data):
-
     # Provides overview of columns, data types, and nulls
     print("Overview of dataset:")
     data.info()  
@@ -27,10 +26,18 @@ def clean(data):
     # Flatten multi-index columns to make them easier to work with
     data.columns = ['_'.join(col).strip() for col in data.columns.values]
 
-    # Extract 'Close' columns, forward-fill any missing 'Close' values
+    # Extract the first available 'Close' column dynamically
     close_columns = [col for col in data.columns if 'Close' in col]
-    data = data[close_columns]
-    data = data.ffill()
+    if not close_columns:
+        raise KeyError("No 'Close' column found in the dataset.")
+    close_column = close_columns[0]  # Select the first 'Close' column found
+    data = data[[close_column]]
+
+    # Rename the 'Close' column for consistent usage in the rest of the code
+    data.rename(columns={close_column: 'Close'}, inplace=True)
+
+    # Forward-fill any missing 'Close' values
+    data['Close'] = data['Close'].ffill()
 
     # Reset index to have 'Date' as a column and ensure Date column is in correct format
     data.reset_index(inplace=True)
@@ -45,6 +52,7 @@ def clean(data):
     data = data.dropna()
 
     return data
+
 
 
 # Function to get mean Analyst Ratings
