@@ -143,6 +143,10 @@ def analyze_stock(ticker):
     train_data = data[:-252]
     test_data = data[-252:]
 
+    train_data = train_data.copy()
+    test_data = test_data.copy()
+
+
     train_data['MACD'], train_data['Signal'], train_data['RSI'], train_data['Upper_Band'], train_data['Lower_Band'] = calculate_indicators(train_data)
     test_data['MACD'], test_data['Signal'], test_data['RSI'], test_data['Upper_Band'], test_data['Lower_Band'] = calculate_indicators(test_data)
 
