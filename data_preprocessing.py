@@ -26,7 +26,7 @@ def clean(data):
 
     # Extract 'Close' columns, and fill missing 'Close' values with the previous day's value
     data = data[['Close']]
-    data['Close'].fillna(method='ffill', inplace=True)
+    data['Close'] = data['Close'].ffill()
 
     # Extract 'Date' columns, reset index to have 'Date' as a column and ensure that the Date column is in the correct format
     data.reset_index(inplace=True) 
