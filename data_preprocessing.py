@@ -21,24 +21,31 @@ def clean(data):
     data.info()  
 
     # Preview the first few rows of the data
-    print("First 5 rows of dataset:")
-    data.head()  
+    print("\nFirst 5 rows of dataset:")
+    print(data.head())  
 
-    # Extract 'Close' columns, and fill missing 'Close' values with the previous day's value
-    data = data[['Close']]
-    data['Close'] = data['Close'].ffill()
+    # Flatten multi-index columns to make them easier to work with
+    data.columns = ['_'.join(col).strip() for col in data.columns.values]
 
-    # Extract 'Date' columns, reset index to have 'Date' as a column and ensure that the Date column is in the correct format
-    data.reset_index(inplace=True) 
-    data['Date'] = pd.to_datetime(data['Date'])
+    # Extract 'Close' columns, forward-fill any missing 'Close' values
+    close_columns = [col for col in data.columns if 'Close' in col]
+    data = data[close_columns]
+    data = data.ffill()
 
-    # Check for the sum of missing values
-    no_of_missing_values=data.isnull().sum()
-    print('There is',no_of_missing_values,"missing values")
+    # Reset index to have 'Date' as a column and ensure Date column is in correct format
+    data.reset_index(inplace=True)
+    if 'Date' in data.columns:
+        data['Date'] = pd.to_datetime(data['Date'], errors='coerce')
 
-    # Drops all rows with any missing values
+    # Check for and display the sum of missing values
+    no_of_missing_values = data.isnull().sum().sum()
+    print(f"There are {no_of_missing_values} missing values after forward filling.")
+
+    # Drop any rows with remaining missing values
     data = data.dropna()
+
     return data
+
 
 # Function to get mean Analyst Ratings
 def get_analyst_ratings(ticker):
