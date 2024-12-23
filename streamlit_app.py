@@ -36,10 +36,10 @@ from data_visualisations import plot_or_save_stock_data, download_results_as_pdf
 # List of stocks to analyze
 tickers = [
     # Technology
-    'AAPL', 'META', 'AMZN', 'NVDA', 'MSFT',
+    'AAPL', 'META', 'AMZN', 'NVDA', 'MSFT', 'NIO',
     
     # FinTech
-    'PYPL', 'AXP', 'MA', 'GPN', 'V',
+    'PYPL', 'AXP', 'MA', 'GPN', 'V', 'FUTU',
     
     # Finance
     'GS', 'JPM', 'BLK', 'C', 'BX',
