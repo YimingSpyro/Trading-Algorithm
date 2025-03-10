@@ -9,7 +9,7 @@ Functions:
     - calculate_indicators: Computes MACD, signal line, RSI, and Bollinger Bands for a given dataset.
     - define_signals: Identifies buy and sell signals based on the calculated indicators.
 """
-
+ 
 # Function to calculate technical indicators
 def calculate_indicators(data):
     short_ema = data['Close'].ewm(span=12, adjust=False).mean()
