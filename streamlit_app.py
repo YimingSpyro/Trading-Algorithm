@@ -30,7 +30,7 @@ Usage:
 
 import streamlit as st
 import pandas as pd 
-from technical_anlysis import analyze_stock
+from technical_analysis import analyze_stock
 from data_visualisations import plot_or_save_stock_data, download_results_as_pdf
 
 # List of stocks to analyze
