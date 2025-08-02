@@ -38,13 +38,16 @@ tickers = [
     # Technology
     'AAPL', 'META', 'AMZN', 'NVDA', 'MSFT', 'NIO', 'XPEV', 'LI', 'ZK',
     # FinTech
-    'PYPL', 'AXP', 'MA', 'GPN', 'V', 'FUTU',
+    'PYPL', 'AXP', 'MA', 'GPN', 'V', 'FUTU', 'HOOD', 'TIGR', 'IBKR',
     
     # Finance
     'GS', 'JPM', 'BLK', 'C', 'BX',
     
     # Consumer
-    'KO', 'WMT', 'MCD', 'NKE', 'SBUX'
+    'KO', 'WMT', 'MCD', 'NKE', 'SBUX',
+
+    # Test
+    'COIN', 'BCS', 'AMD', 'BABA', 'PINS', 'BA', 'AVGO', 'JD', 'PDD', 'SNAP', 'FVRR', 'DJT', 'SHOP'
 ]
 
 # Main Streamlit Program
