@@ -47,7 +47,7 @@ tickers = [
     'KO', 'WMT', 'MCD', 'NKE', 'SBUX',
 
     # Test
-    'COIN', 'BCS', 'AMD', 'BABA', 'PINS', 'BA', 'AVGO', 'JD', 'PDD', 'SNAP', 'FVRR', 'DJT', 'SHOP'
+    'COIN', 'BCS', 'AMD', 'BABA', 'PINS', 'BA', 'AVGO', 'JD', 'PDD', 'SNAP', 'FVRR', 'DJT', 'SHOP', 'SE'
 ]
 
 # Main Streamlit Program
